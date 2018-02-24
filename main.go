@@ -238,8 +238,6 @@ func main() {
 		}
 		tm.Println(outputTable)
 
-		//fmt.Println("Debug DNSResolvers:", DNSResolvers)
-
 		flushTerminal()
 		sleep()
 	}
