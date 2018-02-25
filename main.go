@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	tm "github.com/Anthrazz/goterm" // needed for terminal output
@@ -166,6 +167,10 @@ func getQueryHistory(resolver DNSResolver) string {
 
 // Add a DNS Resolver to the global DNSResolvers configuration
 func addDNSResolver(ip string) {
+	// check for ipv6 ips
+	if strings.Contains(ip, ":") {
+		ip = "[" + ip + "]"
+	}
 	DNSResolvers = append(DNSResolvers, DNSResolver{
 		ipaddress:    ip,
 		lastDelay:    0,
