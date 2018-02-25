@@ -22,14 +22,14 @@ The tool has a help when you call it without arguments:
 
 ```
 ./go-mdnsping
-Usage: ./go-mdnsping <dns server ip> [<dns server ip> ...] [<domain>]
+Usage: ./go-mdnsping <dns server ip> [<dns server ip> ...] <domain>
 
 This tool does query all given DNS servers and report the
 answer delays and show a history of the last queries.
 
 Arguments:
         <dns server ip> : IPs of DNS servers that should be queried.
-        <domain>        : which domain should be queried? Default is 'google.de'. Must be last.
+        <domain>        : which domain should be queried? Must be last.
 ```
 
 # How to Build
