@@ -176,10 +176,6 @@ func addDNSResolver(ip string) {
 		answers:      make([]DNSAnswer, 0)})
 }
 
-func setDomain(newDomain string) {
-	domain.domain = newDomain
-}
-
 func printHelp() {
 	fmt.Println("Usage: " + os.Args[0] + " <dns server ip> [<dns server ip> ...] <domain>")
 	fmt.Println()
