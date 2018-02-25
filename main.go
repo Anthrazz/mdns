@@ -15,6 +15,10 @@ type domainRequest struct {
 	recordType uint16 // record type that is requested
 }
 
+func (dr *domainRequest) SetDomain(name string) {
+	dr.domain = name
+}
+
 // Represents a single DNS Server
 type DNSResolver struct {
 	ipaddress    string        // IP Address of the DNS Resolver
@@ -46,7 +50,7 @@ var queryCounter int = 0
 var maximumHistoryLenght int = 30
 
 // default domain that is requested - can be overwritten with argument
-var domain domainRequest = domainRequest{"google.de", dns.TypeA}
+var domain domainRequest = domainRequest{"", dns.TypeA}
 
 // Clear the terminal screen
 func initTerminal() {
@@ -177,14 +181,14 @@ func setDomain(newDomain string) {
 }
 
 func printHelp() {
-	fmt.Println("Usage: " + os.Args[0] + " <dns server ip> [<dns server ip> ...] [<domain>]")
+	fmt.Println("Usage: " + os.Args[0] + " <dns server ip> [<dns server ip> ...] <domain>")
 	fmt.Println()
 	fmt.Println("This tool does query all given DNS servers and report the")
 	fmt.Println("answer delays and show a history of the last queries.")
 	fmt.Println()
 	fmt.Println("Arguments:")
 	fmt.Println("\t<dns server ip>\t: IPs of DNS servers that should be queried.")
-	fmt.Println("\t<domain>\t: which domain should be queried? Default is '" + domain.domain + "'. Must be last.")
+	fmt.Println("\t<domain>\t: which domain should be queried? Must be last.")
 }
 
 func init() {
@@ -202,11 +206,20 @@ func init() {
 
 		// interpret the last argument as domain
 		if i == (len(os.Args) - 1) {
-			setDomain(argument)
+			domain.SetDomain(argument)
 		} else {
 			// interpret all other as dns resolver ip
 			addDNSResolver(argument)
 		}
+	}
+
+	if domain.domain == "" {
+		fmt.Println("No domain given!")
+		os.Exit(1)
+	}
+	if len(DNSResolvers) == 0 {
+		fmt.Println("No DNS resolvers given!")
+		os.Exit(1)
 	}
 }
 
