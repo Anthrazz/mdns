@@ -31,3 +31,9 @@ Arguments:
         <dns server ip> : IPs of DNS servers that should be queried.
         <domain>        : which domain should be queried? Default is 'google.de'. Must be last.
 ```
+
+# How to Build
+
+1. Install go
+2. get this repo: `go get github.com/Anthrazz/go-mdnsping`
+3. build it: `cd ~/go/src/github.com/Anthrazz/go-mdnsping && go build`
