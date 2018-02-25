@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	tm "github.com/Anthrazz/goterm" // needed for terminal output
-	"github.com/miekg/dns"          // needed for dns queries
+	tm "github.com/buger/goterm" // needed for terminal output
+	"github.com/miekg/dns"       // needed for dns queries
 )
 
 // Represents the domain that should be checked
