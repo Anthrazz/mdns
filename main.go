@@ -142,6 +142,8 @@ func queryResolvers(resolvers *[]DNSResolver) {
 // query a specific resolver
 func queryResolver(ch chan DNSAnswer, resolver DNSResolver, index int) {
 	c := dns.Client{}
+	c.Timeout = 1 * time.Second
+
 	m := dns.Msg{}
 	m.SetQuestion(domain.domain+".", domain.recordType)
 	r, t, err := c.Exchange(&m, resolver.ipaddress+":53")
@@ -249,7 +251,7 @@ func main() {
 
 		// new table with table header
 		outputTable := tm.NewTable(0, 8, 1, ' ', 0)
-		fmt.Fprintf(outputTable, "DNS Server \tSuccess \tErrors \tError %% \tLast \tAverage \tBest \tWorst -\tQueries\n")
+		fmt.Fprintf(outputTable, "DNS Server \tSuccess \tErrors \tError %% \tLast  \tAverage  \tBest  \tWorst  -\tQueries\n")
 
 		// build the log line for each dns resolver
 		for _, resolver := range DNSResolvers {
@@ -265,7 +267,7 @@ func main() {
 				resolver.worstDelay/time.Millisecond,
 				getQueryHistory(resolver))
 		}
-		tm.Println(outputTable)
+		tm.Print(outputTable)
 
 		flushTerminal()
 		sleep()
