@@ -249,7 +249,7 @@ func main() {
 
 		// new table with table header
 		outputTable := tm.NewTable(0, 8, 1, ' ', 0)
-		fmt.Fprintf(outputTable, "DNS Server \tSuccess \tErrors \tError %% \tLast \tAverage \tBest \tWorst -\tQueries\n")
+		fmt.Fprintf(outputTable, "DNS Server \tSuccess \tErrors \tError %% \tLast  \tAverage  \tBest  \tWorst  -\tQueries\n")
 
 		// build the log line for each dns resolver
 		for _, resolver := range DNSResolvers {
@@ -265,7 +265,7 @@ func main() {
 				resolver.worstDelay/time.Millisecond,
 				getQueryHistory(resolver))
 		}
-		tm.Println(outputTable)
+		tm.Print(outputTable)
 
 		flushTerminal()
 		sleep()
