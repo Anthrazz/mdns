@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -22,14 +23,15 @@ func (dr *domainRequest) SetDomain(name string) {
 
 // Represents a single DNS Server
 type DNSResolver struct {
-	ipaddress    string        // IP Address of the DNS Resolver
-	queryAmount  int           // amount of queries send
-	lastDelay    time.Duration // last answer delay
-	bestDelay    time.Duration // best answer delay
-	worstDelay   time.Duration // worst answer delay
-	delaySum     time.Duration // a sum of all answer delays to calculate the average
-	averageDelay time.Duration // the average answer delay
-	answers      []DNSAnswer   // slice with all DNSAnswer's for this DNS resolver
+	ipaddress      string        // IP Address of the DNS Resolver
+	successQueries int           // amount of successfullQueries
+	errorQueries   int           // amount of QUeries with errors
+	lastDelay      time.Duration // last answer delay
+	bestDelay      time.Duration // best answer delay
+	worstDelay     time.Duration // worst answer delay
+	delaySum       time.Duration // a sum of all answer delays to calculate the average
+	averageDelay   time.Duration // the average answer delay
+	answers        []DNSAnswer   // slice with all DNSAnswer's for this DNS resolver
 }
 
 // Represents a single DNS query answer
@@ -86,7 +88,11 @@ func queryResolvers(resolvers *[]DNSResolver) {
 	counter := 0
 	for answer := range channel {
 		counter++
-		(*resolvers)[answer.index].queryAmount++
+		if answer.result {
+			(*resolvers)[answer.index].successQueries++
+		} else {
+			(*resolvers)[answer.index].errorQueries++
+		}
 
 		// add the answer to all dns resolver answers
 		(*resolvers)[answer.index].answers = append((*resolvers)[answer.index].answers, answer)
@@ -109,7 +115,7 @@ func queryResolvers(resolvers *[]DNSResolver) {
 
 		// calculate the average delay
 		(*resolvers)[answer.index].delaySum += answer.delay
-		(*resolvers)[answer.index].averageDelay = time.Duration(int64((*resolvers)[answer.index].delaySum) / int64((*resolvers)[answer.index].queryAmount))
+		(*resolvers)[answer.index].averageDelay = time.Duration(int64((*resolvers)[answer.index].delaySum) / int64((*resolvers)[answer.index].successQueries+(*resolvers)[answer.index].errorQueries))
 
 		// delete the oldest DNSResolver.answer entry when there amount exceed maximumHistoryLenght
 		if len((*resolvers)[answer.index].answers) > maximumHistoryLenght {
@@ -174,7 +180,7 @@ func addDNSResolver(ip string) {
 	DNSResolvers = append(DNSResolvers, DNSResolver{
 		ipaddress:    ip,
 		lastDelay:    0,
-		bestDelay:    -1,
+		bestDelay:    0,
 		worstDelay:   0,
 		delaySum:     0,
 		averageDelay: 0,
@@ -236,14 +242,16 @@ func main() {
 
 		// new table with table header
 		outputTable := tm.NewTable(0, 8, 1, ' ', 0)
-		fmt.Fprintf(outputTable, "DNS Server\tCount\tLast\tAverage\tBest\tWorst -\tQueries\n")
+		fmt.Fprintf(outputTable, "DNS Server \tSuccess \tErrors \tError %% \tLast \tAverage \tBest \tWorst -\tQueries\n")
 
 		// build the log line for each dns resolver
 		for _, resolver := range DNSResolvers {
 			fmt.Fprintf(
-				outputTable, "%s\t%d\t%dms\t%dms\t%dms\t%dms\t%s\n",
+				outputTable, "%s\t%d\t%d\t%s\t%dms\t%dms\t%dms\t%dms\t%s\n",
 				resolver.ipaddress,
-				resolver.queryAmount,
+				resolver.successQueries,
+				resolver.errorQueries,
+				strconv.Itoa(((100/(resolver.successQueries+resolver.errorQueries))*resolver.errorQueries))+"%",
 				resolver.lastDelay/time.Millisecond,
 				resolver.averageDelay/time.Millisecond,
 				resolver.bestDelay/time.Millisecond,
