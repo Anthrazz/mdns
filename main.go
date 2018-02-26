@@ -34,6 +34,13 @@ type DNSResolver struct {
 	answers        []DNSAnswer   // slice with all DNSAnswer's for this DNS resolver
 }
 
+func (dnsr *DNSResolver) getQuerySum() int {
+	return dnsr.successQueries + dnsr.errorQueries
+}
+func (dnsr *DNSResolver) getErrorPercentage() float64 {
+	return float64(float64(dnsr.errorQueries) / float64(dnsr.getQuerySum()) * 100)
+}
+
 // Represents a single DNS query answer
 type DNSAnswer struct {
 	counter int           // counter
@@ -115,7 +122,7 @@ func queryResolvers(resolvers *[]DNSResolver) {
 
 		// calculate the average delay
 		(*resolvers)[answer.index].delaySum += answer.delay
-		(*resolvers)[answer.index].averageDelay = time.Duration(int64((*resolvers)[answer.index].delaySum) / int64((*resolvers)[answer.index].successQueries+(*resolvers)[answer.index].errorQueries))
+		(*resolvers)[answer.index].averageDelay = time.Duration(int64((*resolvers)[answer.index].delaySum) / int64((*resolvers)[answer.index].getQuerySum()))
 
 		// delete the oldest DNSResolver.answer entry when there amount exceed maximumHistoryLenght
 		if len((*resolvers)[answer.index].answers) > maximumHistoryLenght {
@@ -251,7 +258,7 @@ func main() {
 				resolver.ipaddress,
 				resolver.successQueries,
 				resolver.errorQueries,
-				strconv.Itoa(((100/(resolver.successQueries+resolver.errorQueries))*resolver.errorQueries))+"%",
+				strconv.FormatFloat(resolver.getErrorPercentage(), 'f', 2, 64)+"%",
 				resolver.lastDelay/time.Millisecond,
 				resolver.averageDelay/time.Millisecond,
 				resolver.bestDelay/time.Millisecond,
