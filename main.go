@@ -142,6 +142,8 @@ func queryResolvers(resolvers *[]DNSResolver) {
 // query a specific resolver
 func queryResolver(ch chan DNSAnswer, resolver DNSResolver, index int) {
 	c := dns.Client{}
+	c.Timeout = 1 * time.Second
+
 	m := dns.Msg{}
 	m.SetQuestion(domain.domain+".", domain.recordType)
 	r, t, err := c.Exchange(&m, resolver.ipaddress+":53")
