@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"strconv"
@@ -62,6 +63,17 @@ var maximumHistoryLenght int = 30
 // default domain that is requested - can be overwritten with argument
 var domain domainRequest = domainRequest{"", dns.TypeA}
 
+// Variables to hold command line arguments
+var (
+	argument_showHelp bool = false
+	argument_domain   string
+	argument_countMax int
+)
+
+/*************/
+/* Functions */
+/*************/
+
 // Clear the terminal screen
 func initTerminal() {
 	tm.Clear()
@@ -79,6 +91,11 @@ func flushTerminal() {
 
 // Wait some time until the next queries and terminal write
 func sleep() {
+	// exit if the maximum is reached
+	if argument_countMax != 0 && queryCounter >= argument_countMax {
+		os.Exit(0)
+	}
+
 	time.Sleep(time.Second)
 }
 
@@ -197,46 +214,51 @@ func addDNSResolver(ip string) {
 }
 
 func printHelp() {
-	fmt.Println("Usage: " + os.Args[0] + " <dns server ip> [<dns server ip> ...] <domain>")
+	fmt.Println("Usage: " + os.Args[0] + " [-c <max count>] [-d <domain>] <dns resolver ip> [<dns resolver ip> ...]")
 	fmt.Println()
 	fmt.Println("This tool does query all given DNS servers and report the")
 	fmt.Println("answer delays and show a history of the last queries.")
 	fmt.Println()
 	fmt.Println("Arguments:")
-	fmt.Println("\t<dns server ip>\t: IPs of DNS servers that should be queried.")
-	fmt.Println("\t<domain>\t: which domain should be queried? Must be last.")
+	flag.PrintDefaults()
 }
 
-func init() {
-	if len(os.Args) <= 1 {
+// Configure and parse all command line flags
+func parseFlags() {
+	flag.BoolVar(&argument_showHelp, "help", false, "show help")
+	flag.BoolVar(&argument_showHelp, "h", false, "show help")
+	flag.StringVar(&argument_domain, "d", "example.com", "`domain` that should be queried")
+	flag.IntVar(&argument_countMax, "c", 0, "exit after sended `count` of DNS queries")
+	flag.Parse()
+
+	// print the help
+	if argument_showHelp {
+		printHelp()
+		os.Exit(0)
+	}
+
+	// Set the domain that is queried
+	if argument_domain != "" {
+		domain.SetDomain(argument_domain)
+	} else {
+		fmt.Println("No domain given!")
 		printHelp()
 		os.Exit(1)
 	}
 
-	// TODO: implement support for other DNS types as A Records
-	// interpret commandline arguments
-	for i, argument := range os.Args {
-		if i == 0 {
-			continue // skip first argument (program name)
-		}
-
-		// interpret the last argument as domain
-		if i == (len(os.Args) - 1) {
-			domain.SetDomain(argument)
-		} else {
-			// interpret all other as dns resolver ip
-			addDNSResolver(argument)
-		}
-	}
-
-	if domain.domain == "" {
-		fmt.Println("No domain given!")
-		os.Exit(1)
+	// Add DNS resolver
+	for _, resolver := range flag.Args() {
+		addDNSResolver(resolver)
 	}
 	if len(DNSResolvers) == 0 {
 		fmt.Println("No DNS resolvers given!")
+		printHelp()
 		os.Exit(1)
 	}
+}
+
+func init() {
+	parseFlags()
 }
 
 func main() {
