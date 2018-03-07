@@ -1,0 +1,11 @@
+# .goreleaser.yml
+# Build customization
+builds:
+  - binary: go-mdnsping
+    goos:
+      - windows
+      - darwin
+      - linux
+      - freebsd
+    goarch:
+      - amd64
