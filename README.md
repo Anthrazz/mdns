@@ -1,3 +1,7 @@
+# DEPRECATED
+
+Check out [parallel-check](https://github.com/Anthrazz/parallel-check) which combines the same features and more.
+
 # Description
 
 A command line tool to query multiple DNS resolver and show there delay and if they answer.
